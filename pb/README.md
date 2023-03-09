@@ -1,0 +1,2 @@
+- internal:内部协议
+- public:公开协议

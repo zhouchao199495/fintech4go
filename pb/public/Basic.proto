@@ -1,0 +1,375 @@
+syntax = "proto3";
+package MDS.Basic;
+option go_package = "fintech4go.pb.basic";
+
+// enum
+enum MarketID
+{
+	QotMarket_Unknown = 0; //未知市场
+	QotMarket_HK_Security = 1; //香港市场
+	QotMarket_US_Security = 11; //美国市场
+	QotMarket_CNSH_Security = 21; //沪股市场
+	QotMarket_CNSZ_Security = 22; //深股市场
+
+	QotMarket_CHINA_CZCE = 100;
+	QotMarket_CHINA_INE = 101;
+	QotMarket_CHINA_DCE = 102;
+	QotMarket_CHINA_SHFE = 103;
+	QotMarket_CHINA_CFFEX = 104;
+}
+
+enum AssetClass
+{
+	AssetClass_Unknow = 0; //未知
+	AssetClass_Stock = 1; //股票
+	AssetClass_Bond = 2; //债券
+	AssetClass_Future = 3; //期货
+}
+
+enum SecurityType
+{
+	SecurityType_Unknown = 0; //未知
+    SecurityType_Bond = 1; //债券
+    SecurityType_Eqty = 2; //正股
+    SecurityType_Trust = 3; //信托,基金
+    SecurityType_Warrant = 4; //窝轮
+    SecurityType_Index = 5; //指数
+    SecurityType_Plate = 6; //板块
+    SecurityType_Option = 7; //期权
+	SecurityType_Future = 8; //期货
+}
+
+enum CompanyAct
+{
+	CompanyAct_None = 0; //无
+	CompanyAct_Split = 1; //拆股		
+	CompanyAct_Join = 2; //合股
+	CompanyAct_Bonus = 4; //送股
+	CompanyAct_Transfer = 8; //转赠股
+	CompanyAct_Allot = 16; //配股	
+	CompanyAct_Add = 32; //增发股
+	CompanyAct_Dividend = 64; //现金分红
+	CompanyAct_SPDividend = 128; //特别股息	
+}
+
+enum RehabType
+{
+	RehabType_None = 0; //不复权
+	RehabType_Forward = 1; //前复权
+	RehabType_Backward = 2; //后复权
+}
+
+enum SecurityStatus
+{
+	SecurityStatus_Unknown = 0; //未知
+	SecurityStatus_Normal = 1; //正常状态
+	SecurityStatus_Listing = 2; //待上市
+	SecurityStatus_Purchasing = 3; //申购中
+	SecurityStatus_Subscribing = 4; //认购中
+	SecurityStatus_BeforeDrakTradeOpening = 5; //暗盘开盘前
+	SecurityStatus_DrakTrading = 6; //暗盘交易中
+	SecurityStatus_DrakTradeEnd = 7; //暗盘已收盘
+	SecurityStatus_ToBeOpen = 8; //待开盘
+	SecurityStatus_Suspended = 9; //停牌
+	SecurityStatus_Called = 10; //已收回
+	SecurityStatus_ExpiredLastTradingDate = 11; //已过最后交易日
+	SecurityStatus_Expired = 12; //已过期
+	SecurityStatus_Delisted = 13; //已退市
+	SecurityStatus_ChangeToTemporaryCode = 14; //公司行动中，交易关闭，转至临时代码交易
+	SecurityStatus_TemporaryCodeTradeEnd = 15; //临时买卖结束，交易关闭
+	SecurityStatus_ChangedPlateTradeEnd = 16; //已转板，旧代码交易关闭
+	SecurityStatus_ChangedCodeTradeEnd = 17; //已换代码，旧代码交易关闭
+	SecurityStatus_RecoverableCircuitBreaker = 18; //可恢复性熔断
+	SecurityStatus_UnRecoverableCircuitBreaker = 19; //不可恢复性熔断
+	SecurityStatus_AfterCombination = 20; //盘后撮合
+	SecurityStatus_AfterTransation = 21; //盘后交易
+}
+
+enum QotMarketState
+{
+	QotMarketState_None = 0; // 无交易
+	QotMarketState_Auction = 1; // 竞价 
+	QotMarketState_WaitingOpen = 2; // 早盘前等待开盘
+	QotMarketState_Morning = 3; // 早盘 
+	QotMarketState_Rest = 4; // 午间休市 
+	QotMarketState_Afternoon = 5; // 午盘 
+	QotMarketState_Closed = 6; // 收盘
+	QotMarketState_PreMarketBegin = 8; // 盘前
+	QotMarketState_PreMarketEnd = 9; // 盘前结束 
+	QotMarketState_AfterHoursBegin = 10; // 盘后
+	QotMarketState_AfterHoursEnd = 11; // 盘后结束 
+
+	//科创板新增状态
+    QotMarketState_StibAfterHoursWait = 27; // 科创板的盘后撮合时段
+    QotMarketState_StibAfterHoursBegin = 28; // 科创板的盘后交易开始
+    QotMarketState_StibAfterHoursEnd = 29; // 科创板的盘后交易结束
+}
+
+enum TickerDirection
+{
+	TickerDirection_Unknown = 0; //未知
+	TickerDirection_Bid = 1; //外盘
+	TickerDirection_Ask = 2; //内盘
+	TickerDirection_Neutral = 3; //中性盘
+}
+
+enum TradingSessionSubID {
+    TradingSessionSubID_DayClose = 0;
+    TradingSessionSubID_NotYetOpen = 100;
+    TradingSessionSubID_POSOrderInput = 1;
+    TradingSessionSubID_POSNoCancellation = 101;
+    TradingSessionSubID_POSRandomMatching = 108;
+    TradingSessionSubID_POSOrderMatching = 2;
+    TradingSessionSubID_Blocking = 7;
+    TradingSessionSubID_ContinuousTrading = 3;
+    TradingSessionSubID_CASReferencePriceFixing = 105;
+    TradingSessionSubID_CASOrderInput = 5;
+    TradingSessionSubID_CASNoCancellation = 106;
+    TradingSessionSubID_CASRandomClose = 107;
+    TradingSessionSubID_CASOrderMatching = 4;
+    TradingSessionSubID_ExchangeIntervention = 102;
+    TradingSessionSubID_Close = 103;
+    TradingSessionSubID_OrderCancel = 104;
+}
+
+
+//两个字段确定一支股票
+message Security
+{
+int32 market = 1; //MarketID,股票市场
+string code = 2; //股票代码
+}
+
+// Basic
+//美股支持盘前盘后数据
+//科创板仅支持盘后数据：成交量，成交额
+message PreAfterMarketData
+{
+	double price = 1;  // 盘前或盘后 - 价格
+    double high_price = 2;  // 盘前或盘后 - 最高价
+    double low_price = 3;  // 盘前或盘后 - 最低价
+    int64 volume = 4;  // 盘前或盘后 - 成交量
+    double turnover = 5;  // 盘前或盘后 - 成交额
+    double change_value = 6;  // 盘前或盘后 - 涨跌额
+    double change_rate = 7;  // 盘前或盘后 - 涨跌幅（该字段为百分比字段，默认不展示%，如20实际对应20%）
+    double amplitude = 8;  // 盘前或盘后 - 振幅（该字段为百分比字段，默认不展示%，如20实际对应20%）
+}
+
+message FutureBasicQotExData
+{
+	double last_settle_price = 1;
+	int32 open_interest = 2; //持仓量
+	int32 pre_open_interest = 3;//昨持仓
+	double upper_limit_price = 4;
+	double lower_limit_price = 5;
+	double close_price=6; ///今收盘
+	double pre_delta=7; ///昨虚实度
+	double curr_delta=8; ///今虚实度
+	double prev_settle_price = 9;
+}
+
+message BasicQot
+{
+	Security security = 1; //股票
+	uint64 update_time = 2; //最新价的更新时间
+	double high_price = 3; //最高价
+	double open_price = 4; //开盘价
+	double low_price = 5; //最低价
+	double cur_price = 6; //最新价
+	double prev_close_price = 7; //昨收价
+	int64 volume = 8; //成交量
+	double turnover = 9; //成交额
+	double turnover_rate = 10; //换手率（该字段为百分比字段，默认不展示%，如20实际对应20%）
+	int32 security_status = 11; //SecurityStatus, 股票状态
+
+	PreAfterMarketData pre_market = 50; //盘前数据
+	PreAfterMarketData after_market = 51; //盘后数据
+	FutureBasicQotExData future_data = 52; //期货特有字段
+}
+
+
+message HKSecurityStaticBasic {
+    bool VCM_flag =2;
+    bool shortsell_flag = 3;
+    bool CAS_flag = 4;
+    bool CCASS_flag = 5;
+    bool stamp_duty_flag = 6;
+    bool POS_flag = 7;
+    uint32 POS_upper_limit = 8;
+    uint32 POS_lower_limit = 9;
+}
+
+// Static
+message SecurityStaticBasic
+{
+	Security security = 1; //股票
+	int64 id = 2; //股票ID
+	int32 lot_size = 3; //每手数量,期权以及期货类型表示合约乘数
+	int32 security_type = 4; //Qot_Common.SecurityType,股票类型
+	string name = 5; //股票名字
+	string list_time = 6; //上市时间字符串
+	bool delisting = 7; //是否退市
+	double list_timestamp = 8; //上市时间戳
+}
+
+message FutureStaticExData
+{
+	string last_trade_time = 1; //最后交易日，只有非主连期货合约才有该字段
+	double last_trade_timestamp = 2; //最后交易日时间戳，只有非主连期货合约才有该字段
+	bool is_main_contract = 3; //是否主连合约
+}
+
+message SecurityStaticInfo
+{
+	SecurityStaticBasic basic = 1; //基本股票静态信息
+	FutureStaticExData future_exdata = 2; //期货额外股票静态信息
+	HKSecurityStaticBasic hk_basic = 3; //港股特殊字段
+}
+
+message VCMTrigger {
+    Security security = 1;
+    uint64 coolingoff_starttime = 2;
+    uint64 coolingoff_endtime = 3;
+    uint32 vcm_price = 4;
+    uint32 vcm_lower_price = 5;
+    uint32 vcm_upper_price = 6;
+}
+
+message RefPrice {
+    Security security = 1;
+    uint32 ref_price = 2;
+    uint32 lower_price = 3;
+    uint32 upper_price = 4;
+}
+
+message TradingSessionStatus {
+    string market = 1;
+    uint32 marketcode = 2; // MDS.Enums.HK.MarketCode
+    uint32 trading_session_subid = 3; // MDS.Enums.HK.TradingSessionSubID
+    uint32 trading_session_status = 4; // MDS.Enums.HK.TradingSessionStatus
+    uint64 start_datetime = 5;
+    uint64 end_datetime = 6;
+}
+
+message Ticker
+{
+	string time = 1; //时间字符串
+	int64 sequence = 2; // 唯一标识
+	int32 dir = 3; //TickerDirection, 买卖方向
+	double price = 4; //价格
+	int64 volume = 5; //成交量
+	double turnover = 6; //成交额
+	double recvTime = 7; //收到推送数据的本地时间戳，用于定位延迟
+	int32 type = 8; //TickerType, 逐笔类型
+	int32 type_sign = 9; //逐笔类型符号
+	double timestamp = 10; //时间戳
+}
+
+message Broker
+{
+	int64 id = 1; //经纪ID
+	string name = 2; //经纪名称
+	int32 pos = 3; //经纪档位
+}
+
+message Brokerlist
+{
+	Security security = 1; //股票
+	repeated Broker broker_ask_list = 2; //经纪Ask(卖)盘
+	repeated Broker broker_bid_list = 3; //经纪Bid(买)盘
+}
+
+message OrderBookDetail
+{
+	double ask_price = 1; 
+	int64 ask_volume = 2;
+	int32 ask_order_count = 3;
+
+	double bid_price = 4; 
+	int64 bid_volume = 5;
+	int32 bid_order_count = 6;
+}
+
+message OrderBook
+{
+	Security security = 1; //股票
+	int32 order_level_count = 2; //总的挡位
+	uint64 update_time = 3; //最新价的更新时间
+	repeated OrderBookDetail detail_list = 4;
+}
+
+message PlateInfo
+{
+	Security plate = 1; //板块
+	string name = 2; //板块名字
+	int32 plate_type = 3; //PlateSetType 板块类型
+}
+
+message Rehab
+{
+	string time = 1; //时间字符串
+	int64 company_act_flag = 2; //公司行动(CompanyAct)组合标志位
+	double fwd_factor_A = 3; //前复权因子A
+	double fwd_factor_B = 4; //前复权因子B
+	double bwd_factor_A = 5; //后复权因子A
+	double bwd_factor_B = 6; //后复权因子B
+	int32 split_base = 7; //拆股(例如，1拆5)
+	int32 split = 8;	
+	int32 join_base = 9; //合股(例如，50合1)
+	int32 join = 10;	
+	int32 bonus_base = 11; //送股(例如，10送3)
+	int32 bonus = 12;	
+	int32 transfer_base = 13; //转赠股(例如，10转3)
+	int32 transfer = 14;	
+	int32 allot_base = 15; //配股(例如，10送2, 配股价为6.3元)
+	int32 allot = 16;	
+	double allot_price = 17;	
+	int32 add_base = 18; //增发股(例如，10送2, 增发股价为6.3元)
+	int32 add = 19;	
+	double add_price = 20;	
+	double dividend = 21; //现金分红(例如，每10股派现0.5元,则该字段值为0.05)
+	double special_dividend = 22; //特别股息(例如，每10股派特别股息0.5元,则该字段值为0.05)
+	double timestamp = 23; //时间戳
+}
+
+
+message CapitalFlow
+{
+	double capital_in_big = 1; //流入资金额度，大单
+	double capital_in_mid = 2; //流入资金额度，中单
+	double capital_in_small = 3; //流入资金额度，小单
+	double capital_out_big = 4; //流出资金额度，大单
+	double capital_out_mid = 5; //流出资金额度，中单
+	double capital_out_small = 6; //流出资金额度，小单
+	string update_time = 7; //更新时间字符串
+	double update_timestamp = 8; //更新时间戳
+}
+
+message KLine
+{
+	string time = 1; //时间戳字符串
+	bool is_blank = 2; //是否是空内容的点,若为ture则只有时间信息
+	double high_price = 3; //最高价
+	double open_price = 4; //开盘价
+	double low_price = 5; //最低价
+	double close_price = 6; //收盘价
+	double last_close_price = 7; //昨收价
+	int64 volume = 8; //成交量
+	double turnover = 9; //成交额
+	double turnover_rate = 10; //换手率（该字段为百分比字段，展示为小数表示）
+	double pe = 11; //市盈率
+	double change_rate = 12; //涨跌幅（该字段为百分比字段，默认不展示%，如20实际对应20%）
+	double timestamp = 13; //时间戳
+}
+
+message TimeShare
+{
+	string time = 1; //时间字符串
+	bool is_blank = 2; //是否是空内容的点,若为ture则只有时间信息
+	double price = 3; //当前价
+	double last_close_price = 4; //昨收价
+	double avg_price = 5; //均价
+	int64 volume = 6; //成交量
+	double turnover = 7; //成交额
+	double timestamp = 98; //时间戳
+}

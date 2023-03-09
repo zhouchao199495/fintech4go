@@ -1,0 +1,37 @@
+
+syntax = "proto3";
+package MDS.RPC;
+option go_package = "fintech4go.pb.rpc";
+
+enum RequestType
+{
+    Request_Unknown = 0;
+	Request_Snapshot = 2;
+    Request_Order = 3;
+}
+
+enum MessageType
+{
+    Unknown = 0;
+    ArrayMessage = 1;
+	Snapshot = 2;
+    Order = 3;
+}
+
+message QuoteRequest {
+    repeated RequestType types = 1;
+}
+
+message QuoteDataPackage {
+    uint32 message_type = 1;
+    bytes payload = 2;
+}
+
+message QuoteDataPackageArray {
+    repeated QuoteDataPackage record = 1;
+}
+
+service QuoteService {
+    rpc Subscribe(QuoteRequest) returns(stream QuoteDataPackageArray);
+    rpc Request(QuoteRequest) returns(QuoteDataPackageArray);
+}
