@@ -28,14 +28,14 @@ func NewKafkaConsumerWrapper(topic string, partition int, bootstrapServers []str
 		Partition: 0,
 		MinBytes:  10e3, // 10KB
 		MaxBytes:  10e6, // 10MB
+
 	})
 	ff := consumer.Reader.Offset()
 	fmt.Println("ff:", ff)
-	consumer.Reader.SetOffset(0)
 	return consumer
 }
 
-func CreateConsumerGroup(topic string, groupId string, partition int, bootstrapServers []string) *KafkaConsumerWrapper {
+func NewConsumerGroupWrapper(topic string, groupId string, partition int, bootstrapServers []string) *KafkaConsumerWrapper {
 	consumer := &KafkaConsumerWrapper{Topic: topic, Partition: partition, BootstrapServers: bootstrapServers}
 	consumer.Reader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:  bootstrapServers,
@@ -47,6 +47,16 @@ func CreateConsumerGroup(topic string, groupId string, partition int, bootstrapS
 	})
 
 	return consumer
+}
+
+func (consumer *KafkaConsumerWrapper) WorkFromBeginning() {
+	consumer.Reader.SetOffset(0)
+	consumer.Work()
+}
+
+func (consumer *KafkaConsumerWrapper) WorkFromSpecialOffset(offset int64) {
+	consumer.Reader.SetOffset(offset)
+	consumer.Work()
 }
 
 func (consumer *KafkaConsumerWrapper) Work() {
